@@ -1,0 +1,150 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  ;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  /* background-color: red; */
+  background-color: #299be4;
+  width: 800px;
+  height: 400px;
+  margin: 10% auto;
+  ;
+  border-radius: 5px;
+  box-shadow: 0px 0px 19px 2px rgba(156, 156, 156, 1);
+}
+
+.content-holder {
+  text-align: center;
+  color: #382f60;
+  font-size: 14px;
+  font-weight: lighter;
+  letter-spacing: 2px;
+  margin-top: 15%;
+  padding: 50px;
+}
+
+.content-holder h2 {
+  font-size: 34px;
+  margin: 20px auto;
+}
+
+.content-holder p {
+  margin: 30px auto;
+}
+
+.content-holder a {
+  text-decoration: none;
+  color: #299be4;
+  border: none;
+  font-size: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  background-color: white;
+  width: 150px;
+  margin: 20px auto;
+}
+
+
+.box-2 {
+  background-color: white;
+
+  margin: 5px;
+}
+
+.login-form-container {
+  text-align: center;
+  margin-top: 10%;
+
+}
+
+.login-form-container h1 {
+  color: black;
+  font-size: 24px;
+  padding: 20px;
+}
+
+
+.input-field {
+  box-sizing: border-box;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: 7px;
+  border: 1px solid rgb(168, 168, 168);
+  width: 250px;
+  outline: none;
+}
+
+.login-button {
+  box-sizing: border-box;
+  color: white;
+  font-size: 14px;
+  padding: 13px;
+  border-radius: 7px;
+  border: none;
+  width: 250px;
+  outline: none;
+  background-color: rgb(56, 102, 189);
+  cursor: pointer;
+}
+
+
+
+
+
+
+
+.signup-form-container {
+  text-align: center;
+  margin-top: 10%;
+
+}
+
+.signup-form-container h1 {
+  color: black;
+  font-size: 24px;
+  padding: 20px;
+}
+
+.signup-button {
+  box-sizing: border-box;
+  color: white;
+  font-size: 14px;
+  padding: 13px;
+  border-radius: 7px;
+  border: none;
+  width: 250px;
+  outline: none;
+  cursor: pointer;
+  background-color: rgb(56, 189, 149);
+}
+
+.error-message{
+ 
+  /* Light red background */
+  color: #ff0019e1;
+  /* Dark red text */
+  
+  /* Red border */
+  padding: 15px;
+  /* Padding inside the box */
+  border-radius: 5px;
+  /* Rounded corners */
+  margin: 20px 0;
+  /* Space above and below */
+  font-family: Arial, sans-serif;
+  /* Font styling */
+  text-align: center;
+}
+.error-message strong {
+  font-weight: bold;          /* Make "Error:" bold */
+}

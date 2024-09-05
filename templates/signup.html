@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/style.css">
+    <title>Sign Up</title>
+</head>
+
+<body>
+    <div class="container">
+        <!--Data or Content-->
+        <div class="box-1">
+            <div class="content-holder">
+                <h2>Already have an Account</h2>
+
+                <a href="/login" class="button-1">Log In</a>
+
+            </div>
+        </div>
+
+
+        <!--Forms-->
+        <div class="box-2">
+
+
+
+            <!--Create Container for Signup form-->
+            <div class="signup-form-container">
+                <form action="/signup" method="post">
+                    <h1>Sign Up Form</h1>
+                    
+                    <!-- Username input -->
+                    <input type="text" name="username" placeholder="Username" class="input-field" required>
+                    <br><br>
+                    
+                    <!-- Email input -->
+                    <input type="email" name="email" placeholder="Email" class="input-field" required>
+                    <br><br>
+                    
+                    <!-- Password input -->
+                    <input type="password" name="password" placeholder="Password" class="input-field" required>
+                    <br><br>
+                    
+                    <!-- Submit button -->
+                    <button class="signup-button" type="submit">Sign Up</button>
+                    <div class="error-message"><strong>{{.Error}}</strong></div>
+                </form>
+                
+            </div>
+
+
+
+        </div>
+</body>
+
+</html>

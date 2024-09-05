@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <title> Admin Login Page</title>
+</head>
+
+<body>
+    <div class="container">
+        <!--Data or Content-->
+        <div class="box-1">
+            <div class="content-holder">
+                <h2>Admin Login </h2>
+
+                   <!-- <button class="button-2">Login</button> -->
+            </div>
+        </div>
+
+
+        <!--Forms-->
+        <div class="box-2">
+            <div class="login-form-container">
+                <form action="/admin/login" method="post">
+                    <h1>Admin Login Form</h1>
+                <input type="text" name="username" placeholder="Username" class="input-field">
+                <br><br>
+                <input type="password" name="password" placeholder="Password" class="input-field">
+                <br><br>
+                <button class="login-button" type="submit">Login</button>
+                <div class="error-message"><strong>{{.Error}}</strong></div>
+                </form>
+            </div>
+
+
+            
+
+
+        </div>
+</body>
+
+</html>
