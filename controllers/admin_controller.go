@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	
-	"fmt"
 	"time"
 	"webapp/config"
 	"webapp/models"
@@ -14,45 +12,17 @@ import (
 
 // Struct for Admin Login
 type AdminLoginForm struct {
-	Username string `form:"username"`
-	Password string `form:"password"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
-// Struct for User Search
-type UserSearchForm struct {
-	Search string `form:"search"`
-}
+
 
 // Struct for Create/Edit User
 type UserForm struct {
-	Username string `form:"username"`
-	Password string `form:"password"`
-	Email    string `form:"email"`
-	
-}
-
-func ShowAdminLoginPage(c *fiber.Ctx) error {
-	tokenString := c.Cookies("admin_token")
-    fmt.Println(tokenString)
-    if tokenString != "" {
-        // Parse the token to check if it's valid
-        token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-            // Validate the signing method and return the secret key
-            if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-                return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-            }
-            return []byte("secret"), nil // Replace with your secret key
-        })
-        fmt.Println(err," ",token.Valid)
-        
-
-        // If the token is valid, redirect to the home page
-        if err == nil && token.Valid {
-            fmt.Println("Token valid. Redirecting to /home")
-            return c.Redirect("/admin/panel")
-        }
-    }
-	return c.Render("admin_login", nil)
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 func AdminLogin(c *fiber.Ctx) error {
@@ -65,9 +35,7 @@ func AdminLogin(c *fiber.Ctx) error {
 	config.DB.Where("username = ? AND is_admin = ?", data.Username, true).First(&adminUser)
 
 	if adminUser.ID == 0 || bcrypt.CompareHashAndPassword([]byte(adminUser.Password), []byte(data.Password)) != nil {
-		return c.Render("admin_login",fiber.Map{
-			"Error":"Admin access doesn't exist in this username",
-	})
+		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -75,38 +43,45 @@ func AdminLogin(c *fiber.Ctx) error {
 		"is_admin": true,
 		"exp":      time.Now().Add(time.Hour * 72).Unix(),
 	})
-	fmt.Println(token)
 
-	tokenString, _ := token.SignedString([]byte("secret"))
-	c.Cookie(&fiber.Cookie{
-		Name:  "admin_token",
-		Value: tokenString,
+	tokenString, err := token.SignedString([]byte("secret"))
+	if err != nil {
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.JSON(fiber.Map{
+		"token": tokenString,
 	})
-    
-	return c.Redirect("/admin/panel")
 }
 
 func AdminPanel(c *fiber.Ctx) error {
 	var users []models.User
 	config.DB.Find(&users) // Fetch all users
 
-	return c.Render("admin", fiber.Map{
-		"Users": users,
-	})
+	return c.JSON(users)
 }
 
 func SearchUser(c *fiber.Ctx) error {
-    // Fetch the search query from the URL query parameters
-    searchQuery := c.Query("search", "")
+	// Fetch the search query from the URL query parameters
+	searchQuery := c.Query("search", "")
 
-    // Search for users where the username matches the query
-    var users []models.User
-    config.DB.Where("username ILIKE ?", "%"+searchQuery+"%").Find(&users)
+	// Search for users where the username matches the query
+	var users []models.User
+	config.DB.Where("username ILIKE ?", "%"+searchQuery+"%").Find(&users)
 
-    // Render the admin template with the search results
-    return c.Render("admin", fiber.Map{
-        "Users": users, // Return search results in Users
-    })
+	// Return the search results as JSON
+	return c.JSON(users)
+}
+func GetUser(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var user models.User
+
+	if err := config.DB.First(&user, id).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("User not found")
+	}
+
+	return c.JSON(user)
+
 }
 
 func CreateUser(c *fiber.Ctx) error {
@@ -124,12 +99,12 @@ func CreateUser(c *fiber.Ctx) error {
 	user := models.User{
 		Username: data.Username,
 		Password: string(hashedPassword),
-		Email: data.Email,// Handle admin flag
+		Email:    data.Email, // Handle admin flag
 	}
 
 	config.DB.Create(&user)
 
-	return c.Redirect("/admin/panel")
+	return c.SendStatus(fiber.StatusCreated)
 }
 
 func EditUser(c *fiber.Ctx) error {
@@ -154,45 +129,32 @@ func EditUser(c *fiber.Ctx) error {
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 		user.Password = string(hashedPassword)
 	}
+
 	if data.Email != "" {
 		user.Email = data.Email
 	}
 
-	// Handle admin flag
-
 	config.DB.Save(&user)
 
-	return c.Redirect("/admin/panel")
+	return c.JSON(user)
 }
 
 func DeleteUser(c *fiber.Ctx) error {
-    // Admin delete user logic
-    id := c.Params("id")
-    var user models.User
+	// Admin delete user logic
+	id := c.Params("id")
 
-    // Fetch the user, including soft-deleted ones
-    if err := config.DB.Unscoped().First(&user, id).Error; err != nil {
-        return c.Status(fiber.StatusNotFound).SendString("User not found")
-    }
+	// Fetch the user, including soft-deleted ones
+	var user models.User
+	if err := config.DB.Unscoped().First(&user, id).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("User not found")
+	}
 
-    // Permanently delete the user from the database
-    if err := config.DB.Unscoped().Delete(&user).Error; err != nil {
-        return c.Status(fiber.StatusInternalServerError).SendString("Failed to delete user")
-    }
+	// Permanently delete the user from the database
+	if err := config.DB.Unscoped().Delete(&user).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to delete user")
+	}
 
-    return c.Redirect("/admin/panel")
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
 
-func AdminLogout(c *fiber.Ctx) error {
-	// Clear the admin JWT token by deleting the cookie
-	c.Cookie(&fiber.Cookie{
-		Name:     "admin_token",
-		Value:    "",
-		Expires:  time.Now().Add(-time.Hour), // Set expiration to the past
-		HTTPOnly: true,
-	})
-
-	// Redirect to the admin login page
-	return c.Redirect("/admin/login")
-}

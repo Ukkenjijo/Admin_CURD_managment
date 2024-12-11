@@ -12,10 +12,11 @@ import (
 func AuthRequired() fiber.Handler {
     return jwtware.New(jwtware.Config{
         SigningKey:  jwtware.SigningKey{Key: []byte("your_secret_key")}, // Replace with your secret key
-        TokenLookup: "cookie:token",            // Look for the JWT in the cookie named "token"
-        ContextKey:  "user",                    // Store the validated token in the context under "user"
+        TokenLookup: "header:Authorization",            // Look for the JWT in the "Authorization" header
+        AuthScheme:  "Bearer ",                          // Look for the "Bearer " prefix in the "Authorization" header
+        ContextKey:  "user",                            // Store the validated token in the context under "user"
         ErrorHandler: func(c *fiber.Ctx, err error) error {
-            return c.Redirect("/login")        // Redirect to login page if authentication fails
+            return c.Status(fiber.StatusUnauthorized).SendString(err.Error()) // Return 401 Unauthorized if authentication fails
         },
     })
 }
@@ -24,10 +25,11 @@ func AdminAuthRequired() fiber.Handler {
 	
 	return jwtware.New(jwtware.Config{
 		SigningKey:   jwtware.SigningKey{Key: []byte("secret")},   // Replace with your actual secret key
-		TokenLookup:  "cookie:admin_token",        // Look for the JWT in the "admin_token" cookie
-		ContextKey:   "admin_user",                // Store the validated token in the context under "admin_user"
+		TokenLookup:  "header:Authorization",        // Look for the JWT in the "Authorization" header with the "Bearer " prefix
+		AuthScheme:   "Bearer ",                      // Look for the "Bearer " prefix in the "Authorization" header
+		ContextKey:   "admin_user",                   // Store the validated token in the context under "admin_user"
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			return c.Redirect("/admin/login")      // Redirect to login if authentication fails
+			return c.Status(fiber.StatusUnauthorized).SendString(err.Error()) // Return 401 Unauthorized if authentication fails
 		},
 		SuccessHandler: func(c *fiber.Ctx) error {
 			// Retrieve the validated token from the context
@@ -39,7 +41,7 @@ func AdminAuthRequired() fiber.Handler {
 			// Check if the user has the admin role
 			isAdmin, ok := claims["is_admin"].(bool)
 			if !ok || !isAdmin {
-				return c.Redirect("/admin/login")  // Redirect if the user is not an admin
+				return c.Status(fiber.StatusForbidden).SendString("Only admins are allowed to access this resource") // Return 403 Forbidden if the user is not an admin
 			}
 
 			// Proceed to the next middleware or route if the user is authenticated and has the admin role

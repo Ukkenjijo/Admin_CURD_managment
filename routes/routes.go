@@ -7,24 +7,19 @@ import (
 )
 
 func SetupRoutes(app *fiber.App) {
-  // Auth routes
-  app.Get("/",controllers.ToLogin)
-  app.Get("/login", controllers.ShowLoginPage)
-  app.Post("/login", controllers.Login)
-  app.Get("/signup", controllers.ShowSignupPage)
-  app.Post("/signup", controllers.Signup)
-  app.Get("/logout", controllers.Logout)
 
-  // User home page
-  app.Get("/home", middlewares.AuthRequired(), controllers.Home)
+    // Public routes
+    app.Post("/api/signup", controllers.Signup)
+    app.Post("/api/login", controllers.Login)
+    app.Get("/api/home",middlewares.AuthRequired(), controllers.Home)
 
-  // Admin routes
-  app.Get("/admin/login", controllers.ShowAdminLoginPage)
-  app.Post("/admin/login", controllers.AdminLogin)
-  app.Get("/admin/logout", middlewares.AdminAuthRequired(), controllers.AdminLogout)
-  app.Get("/admin/panel",middlewares.AdminAuthRequired(), controllers.AdminPanel)
-  app.Get("/admin/search", middlewares.AdminAuthRequired(), controllers.SearchUser)
-  app.Post("/admin/create", middlewares.AdminAuthRequired(), controllers.CreateUser)
-  app.Post("/admin/edit/:id", middlewares.AdminAuthRequired(), controllers.EditUser)
-  app.Get("/admin/delete/:id", middlewares.AdminAuthRequired(), controllers.DeleteUser)
+    // Admin routes
+    app.Post("/api/admin/login", controllers.AdminLogin)
+    app.Get("/api/admin/dashboard", middlewares.AdminAuthRequired(), controllers.AdminPanel)
+    app.Post("/api/admin/user", middlewares.AdminAuthRequired(), controllers.CreateUser)
+    app.Get("/api/admin/user/:id", middlewares.AdminAuthRequired(), controllers.GetUser)
+    app.Get("/api/admin/search", middlewares.AdminAuthRequired(), controllers.SearchUser)
+    app.Put("/api/admin/user/:id", middlewares.AdminAuthRequired(), controllers.EditUser)
+    app.Delete("/api/admin/user/:id", middlewares.AdminAuthRequired(), controllers.DeleteUser)
+  
 }
