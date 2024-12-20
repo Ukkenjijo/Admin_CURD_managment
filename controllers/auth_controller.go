@@ -59,20 +59,20 @@ func Signup(c *fiber.Ctx) error {
 	}
 	var data SignupData
 	if err := c.BodyParser(&data); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid request")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
 	// Check if username already exists
 	var existingUser models.User
 	config.DB.Where("username = ?", data.Username).First(&existingUser)
 	if existingUser.ID != 0 {
-		return c.Status(fiber.StatusConflict).SendString("Username already taken")
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Username already exists"})
 	}
 
 	// Hash the user's password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Error creating user")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create user"})
 	}
 
 	// Create a new user record
@@ -84,7 +84,7 @@ func Signup(c *fiber.Ctx) error {
 	config.DB.Create(&user)
 
 	//send a statusok response
-	return c.Status(fiber.StatusOK).SendString("User created successfully")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "User created successfully"})
 }
 
 func Home(c *fiber.Ctx) error {
