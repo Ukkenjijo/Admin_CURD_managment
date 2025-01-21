@@ -20,7 +20,7 @@ func Login(c *fiber.Ctx) error {
 	}
 	var data LoginData
 	if err := c.BodyParser(&data); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid request")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
 	var user models.User
@@ -28,7 +28,7 @@ func Login(c *fiber.Ctx) error {
 
 	// Check if user exists and if password matches
 	if user.ID == 0 || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)) != nil {
-		return c.Status(fiber.StatusUnauthorized).SendString("Invalid Credintials")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
 	}
 
 	// Create JWT claims
@@ -41,11 +41,11 @@ func Login(c *fiber.Ctx) error {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte("your_secret_key")) // Replace with your secret key
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
 	}
 
 	// Return the token as response
-	return c.SendString(tokenString)
+	return c.JSON(fiber.Map{"token": tokenString})
 }
 
 // Handle signup and issue JWT token
