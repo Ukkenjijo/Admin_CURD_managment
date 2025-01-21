@@ -28,14 +28,14 @@ type UserForm struct {
 func AdminLogin(c *fiber.Ctx) error {
 	var data AdminLoginForm
 	if err := c.BodyParser(&data); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid request")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"Invalid request"})
 	}
 
 	var adminUser models.User
 	config.DB.Where("username = ? AND is_admin = ?", data.Username, true).First(&adminUser)
 
 	if adminUser.ID == 0 || bcrypt.CompareHashAndPassword([]byte(adminUser.Password), []byte(data.Password)) != nil {
-		return c.SendStatus(fiber.StatusUnauthorized)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
